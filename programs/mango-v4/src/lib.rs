@@ -145,7 +145,7 @@ pub mod mango_v4 {
         reduce_only: u8,
         token_conditional_swap_taker_fee_rate: f32,
         token_conditional_swap_maker_fee_rate: f32,
-        flash_loan_swap_fee_rate: f32,
+        flash_loan_deposit_fee_rate: f32,
     ) -> Result<()> {
         #[cfg(feature = "enable-gpl")]
         instructions::token_register(
@@ -172,7 +172,7 @@ pub mod mango_v4 {
             reduce_only,
             token_conditional_swap_taker_fee_rate,
             token_conditional_swap_maker_fee_rate,
-            flash_loan_swap_fee_rate,
+            flash_loan_deposit_fee_rate,
         )?;
         Ok(())
     }
@@ -216,7 +216,7 @@ pub mod mango_v4 {
         force_close_opt: Option<bool>,
         token_conditional_swap_taker_fee_rate_opt: Option<f32>,
         token_conditional_swap_maker_fee_rate_opt: Option<f32>,
-        flash_loan_swap_fee_rate_opt: Option<f32>,
+        flash_loan_deposit_fee_rate_opt: Option<f32>,
     ) -> Result<()> {
         #[cfg(feature = "enable-gpl")]
         instructions::token_edit(
@@ -247,7 +247,7 @@ pub mod mango_v4 {
             force_close_opt,
             token_conditional_swap_taker_fee_rate_opt,
             token_conditional_swap_maker_fee_rate_opt,
-            flash_loan_swap_fee_rate_opt,
+            flash_loan_deposit_fee_rate_opt,
         )?;
         Ok(())
     }
@@ -288,12 +288,43 @@ pub mod mango_v4 {
     ) -> Result<()> {
         #[cfg(feature = "enable-gpl")]
         instructions::account_create(
-            ctx,
+            &ctx.accounts.account,
+            *ctx.bumps.get("account").ok_or(MangoError::SomeError)?,
+            ctx.accounts.group.key(),
+            ctx.accounts.owner.key(),
             account_num,
             token_count,
             serum3_count,
             perp_count,
             perp_oo_count,
+            0,
+            name,
+        )?;
+        Ok(())
+    }
+
+    pub fn account_create_v2(
+        ctx: Context<AccountCreateV2>,
+        account_num: u32,
+        token_count: u8,
+        serum3_count: u8,
+        perp_count: u8,
+        perp_oo_count: u8,
+        token_conditional_swap_count: u8,
+        name: String,
+    ) -> Result<()> {
+        #[cfg(feature = "enable-gpl")]
+        instructions::account_create(
+            &ctx.accounts.account,
+            *ctx.bumps.get("account").ok_or(MangoError::SomeError)?,
+            ctx.accounts.group.key(),
+            ctx.accounts.owner.key(),
+            account_num,
+            token_count,
+            serum3_count,
+            perp_count,
+            perp_oo_count,
+            token_conditional_swap_count,
             name,
         )?;
         Ok(())
@@ -328,6 +359,12 @@ pub mod mango_v4 {
             perp_oo_count,
             token_conditional_swap_count,
         )?;
+        Ok(())
+    }
+
+    pub fn account_size_migration(ctx: Context<AccountSizeMigration>) -> Result<()> {
+        #[cfg(feature = "enable-gpl")]
+        instructions::account_size_migration(ctx)?;
         Ok(())
     }
 
@@ -1304,6 +1341,7 @@ pub mod mango_v4 {
         Ok(())
     }
 
+    /// Warning, this instruction is for testing purposes only!
     pub fn compute_account_data(ctx: Context<ComputeAccountData>) -> Result<()> {
         #[cfg(feature = "enable-gpl")]
         instructions::compute_account_data(ctx)?;
