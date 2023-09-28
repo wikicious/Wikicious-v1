@@ -1,4 +1,4 @@
-# Mango v4 release steps
+# wikicious v1 release steps
 
 - Setup and info
 
